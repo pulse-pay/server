@@ -44,36 +44,35 @@ const serviceSchema = new mongoose.Schema(
 
 // Indexes
 serviceSchema.index({ storeId: 1 });
-serviceSchema.index({ qrCodeId: 1 });
 serviceSchema.index({ isActive: 1 });
 
 // Virtual for rate per minute
-serviceSchema.virtual('ratePerMinute').get(function() {
+serviceSchema.virtual('ratePerMinute').get(function () {
   return this.ratePerSecond * 60;
 });
 
 // Virtual for rate per hour
-serviceSchema.virtual('ratePerHour').get(function() {
+serviceSchema.virtual('ratePerHour').get(function () {
   return this.ratePerSecond * 3600;
 });
 
 // Static method - find services by store
-serviceSchema.statics.findByStore = function(storeId) {
+serviceSchema.statics.findByStore = function (storeId) {
   return this.find({ storeId, isActive: true });
 };
 
 // Static method - find service by QR code
-serviceSchema.statics.findByQrCode = function(qrCodeId) {
+serviceSchema.statics.findByQrCode = function (qrCodeId) {
   return this.findOne({ qrCodeId, isActive: true });
 };
 
 // Instance method - calculate cost for duration
-serviceSchema.methods.calculateCost = function(durationSeconds) {
+serviceSchema.methods.calculateCost = function (durationSeconds) {
   return this.ratePerSecond * durationSeconds;
 };
 
 // Instance method - check if user can afford minimum balance
-serviceSchema.methods.canUserAfford = function(userBalance) {
+serviceSchema.methods.canUserAfford = function (userBalance) {
   return userBalance >= this.minBalanceRequired;
 };
 

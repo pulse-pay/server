@@ -91,15 +91,13 @@ const storeAccountSchema = new mongoose.Schema(
 );
 
 // Indexes
-storeAccountSchema.index({ email: 1 });
-storeAccountSchema.index({ phone: 1 });
 storeAccountSchema.index({ walletId: 1 });
 storeAccountSchema.index({ storeType: 1 });
 storeAccountSchema.index({ verificationStatus: 1 });
 storeAccountSchema.index({ 'location.lat': 1, 'location.lng': 1 });
 
 // Instance method - get public profile
-storeAccountSchema.methods.getPublicProfile = function() {
+storeAccountSchema.methods.getPublicProfile = function () {
   return {
     id: this._id,
     storeName: this.storeName,
@@ -117,22 +115,22 @@ storeAccountSchema.methods.getPublicProfile = function() {
 };
 
 // Static method - find by email
-storeAccountSchema.statics.findByEmail = function(email) {
+storeAccountSchema.statics.findByEmail = function (email) {
   return this.findOne({ email: email.toLowerCase() });
 };
 
 // Static method - find by store type
-storeAccountSchema.statics.findByStoreType = function(storeType) {
+storeAccountSchema.statics.findByStoreType = function (storeType) {
   return this.find({ storeType, isActive: true, verificationStatus: 'VERIFIED' });
 };
 
 // Instance method - check if store is verified
-storeAccountSchema.methods.isVerified = function() {
+storeAccountSchema.methods.isVerified = function () {
   return this.verificationStatus === 'VERIFIED';
 };
 
 // Instance method - check if store can accept payments
-storeAccountSchema.methods.canAcceptPayments = function() {
+storeAccountSchema.methods.canAcceptPayments = function () {
   return this.isActive && this.verificationStatus === 'VERIFIED' && this.walletId;
 };
 
