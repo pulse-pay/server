@@ -66,12 +66,10 @@ const userAccountSchema = new mongoose.Schema(
 );
 
 // Indexes
-userAccountSchema.index({ email: 1 });
-userAccountSchema.index({ phone: 1 });
 userAccountSchema.index({ walletId: 1 });
 
 // Instance method - get public profile
-userAccountSchema.methods.getPublicProfile = function() {
+userAccountSchema.methods.getPublicProfile = function () {
   return {
     id: this._id,
     fullName: this.fullName,
@@ -86,22 +84,22 @@ userAccountSchema.methods.getPublicProfile = function() {
 };
 
 // Static method - find by email
-userAccountSchema.statics.findByEmail = function(email) {
+userAccountSchema.statics.findByEmail = function (email) {
   return this.findOne({ email: email.toLowerCase() });
 };
 
 // Static method - find by phone
-userAccountSchema.statics.findByPhone = function(phone) {
+userAccountSchema.statics.findByPhone = function (phone) {
   return this.findOne({ phone });
 };
 
 // Instance method - check if account is active
-userAccountSchema.methods.isAccountActive = function() {
+userAccountSchema.methods.isAccountActive = function () {
   return this.status === 'ACTIVE';
 };
 
 // Instance method - check if KYC is verified
-userAccountSchema.methods.isKycVerified = function() {
+userAccountSchema.methods.isKycVerified = function () {
   return this.kycLevel === 'VERIFIED';
 };
 
