@@ -54,6 +54,14 @@ const streamSessionSchema = new mongoose.Schema(
       type: Number,
       default: 0,
       min: [0, 'Duration cannot be negative']
+    },
+    onChainFlowId: {
+      type: String, // The transaction hash or flow ID
+      default: null
+    },
+    superTokenAddress: {
+      type: String,
+      default: null
     }
   },
   {
@@ -69,7 +77,7 @@ streamSessionSchema.index({ status: 1 });
 streamSessionSchema.index({ startedAt: -1 });
 
 // Virtual for current duration (if session is active)
-streamSessionSchema.virtual('currentDurationSeconds').get(function() {
+streamSessionSchema.virtual('currentDurationSeconds').get(function () {
   if (this.status === 'ENDED') {
     return this.totalDurationSeconds;
   }
@@ -79,7 +87,7 @@ streamSessionSchema.virtual('currentDurationSeconds').get(function() {
 });
 
 // Virtual for unbilled duration
-streamSessionSchema.virtual('unbilledDurationSeconds').get(function() {
+streamSessionSchema.virtual('unbilledDurationSeconds').get(function () {
   if (this.status !== 'ACTIVE') {
     return 0;
   }
@@ -89,17 +97,17 @@ streamSessionSchema.virtual('unbilledDurationSeconds').get(function() {
 });
 
 // Virtual for unbilled amount
-streamSessionSchema.virtual('unbilledAmount').get(function() {
+streamSessionSchema.virtual('unbilledAmount').get(function () {
   return this.unbilledDurationSeconds * this.ratePerSecond;
 });
 
 // Instance method - check if session is active
-streamSessionSchema.methods.isSessionActive = function() {
+streamSessionSchema.methods.isSessionActive = function () {
   return this.status === 'ACTIVE';
 };
 
 // Instance method - pause session
-streamSessionSchema.methods.pause = function() {
+streamSessionSchema.methods.pause = function () {
   if (this.status !== 'ACTIVE') {
     throw new Error('Can only pause an active session');
   }
@@ -108,7 +116,7 @@ streamSessionSchema.methods.pause = function() {
 };
 
 // Instance method - resume session
-streamSessionSchema.methods.resume = function() {
+streamSessionSchema.methods.resume = function () {
   if (this.status !== 'PAUSED') {
     throw new Error('Can only resume a paused session');
   }
@@ -118,7 +126,7 @@ streamSessionSchema.methods.resume = function() {
 };
 
 // Instance method - end session
-streamSessionSchema.methods.end = function() {
+streamSessionSchema.methods.end = function () {
   if (this.status === 'ENDED') {
     throw new Error('Session is already ended');
   }
@@ -128,7 +136,7 @@ streamSessionSchema.methods.end = function() {
 };
 
 // Instance method - update billing
-streamSessionSchema.methods.updateBilling = function(amount, durationSeconds) {
+streamSessionSchema.methods.updateBilling = function (amount, durationSeconds) {
   this.totalAmountTransferred += amount;
   this.totalDurationSeconds += durationSeconds;
   this.lastBilledAt = new Date();
@@ -136,17 +144,17 @@ streamSessionSchema.methods.updateBilling = function(amount, durationSeconds) {
 };
 
 // Static method - find active sessions for user wallet
-streamSessionSchema.statics.findActiveByUserWallet = function(userWalletId) {
+streamSessionSchema.statics.findActiveByUserWallet = function (userWalletId) {
   return this.findOne({ userWalletId, status: 'ACTIVE' });
 };
 
 // Static method - find active sessions for store wallet
-streamSessionSchema.statics.findActiveByStoreWallet = function(storeWalletId) {
+streamSessionSchema.statics.findActiveByStoreWallet = function (storeWalletId) {
   return this.find({ storeWalletId, status: 'ACTIVE' });
 };
 
 // Static method - find sessions by service
-streamSessionSchema.statics.findByService = function(serviceId) {
+streamSessionSchema.statics.findByService = function (serviceId) {
   return this.find({ serviceId });
 };
 

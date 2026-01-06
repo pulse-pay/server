@@ -4,7 +4,7 @@
 # Server Configuration
 PORT=5000
 NODE_ENV=development
-
+TEST_PRIVATE_KEY= 228324d0db174c8c43d112be8973810aeaff36f20373aee788a6025fec781919
 # MongoDB Configuration
 MONGO_URI=mongodb://localhost:27017/pulsepay
 # For MongoDB Atlas:
