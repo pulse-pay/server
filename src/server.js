@@ -7,7 +7,7 @@ import config from './config/config.js';
 dotenv.config();
 
 // Configuration
-const PORT = config.port;
+const PORT = process.env.PORT || 5001;
 const NODE_ENV = config.nodeEnv;
 
 // Connect to database

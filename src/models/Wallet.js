@@ -48,6 +48,16 @@ const walletSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'StreamSession',
       default: null
+    },
+    evmAddress: {
+      type: String,
+      trim: true,
+      default: null
+    },
+    encryptedPrivateKey: {
+      type: String, // In production, never store raw keys. Use a KMS.
+      select: false, // Don't return by default
+      default: null
     }
   },
   {
@@ -61,38 +71,38 @@ walletSchema.index({ status: 1 });
 walletSchema.index({ activeSessionId: 1 });
 
 // Virtual for available balance
-walletSchema.virtual('availableBalance').get(function() {
+walletSchema.virtual('availableBalance').get(function () {
   return this.balance - this.lockedBalance;
 });
 
 // Instance method - check if wallet is active
-walletSchema.methods.isWalletActive = function() {
+walletSchema.methods.isWalletActive = function () {
   return this.status === 'ACTIVE';
 };
 
 // Instance method - check if wallet has sufficient balance
-walletSchema.methods.hasSufficientBalance = function(amount) {
+walletSchema.methods.hasSufficientBalance = function (amount) {
   return this.availableBalance >= amount;
 };
 
 // Instance method - check if wallet has active session
-walletSchema.methods.hasActiveSession = function() {
+walletSchema.methods.hasActiveSession = function () {
   return this.activeSessionId !== null;
 };
 
 // Static method - find wallet by owner
-walletSchema.statics.findByOwner = function(ownerId, ownerType) {
+walletSchema.statics.findByOwner = function (ownerId, ownerType) {
   return this.findOne({ ownerId, ownerType });
 };
 
 // Instance method - credit balance
-walletSchema.methods.credit = function(amount) {
+walletSchema.methods.credit = function (amount) {
   this.balance += amount;
   return this.save();
 };
 
 // Instance method - debit balance
-walletSchema.methods.debit = function(amount) {
+walletSchema.methods.debit = function (amount) {
   if (!this.hasSufficientBalance(amount)) {
     throw new Error('Insufficient balance');
   }
@@ -101,7 +111,7 @@ walletSchema.methods.debit = function(amount) {
 };
 
 // Instance method - lock balance
-walletSchema.methods.lockBalance = function(amount) {
+walletSchema.methods.lockBalance = function (amount) {
   if (!this.hasSufficientBalance(amount)) {
     throw new Error('Insufficient balance to lock');
   }
@@ -110,7 +120,7 @@ walletSchema.methods.lockBalance = function(amount) {
 };
 
 // Instance method - unlock balance
-walletSchema.methods.unlockBalance = function(amount) {
+walletSchema.methods.unlockBalance = function (amount) {
   if (this.lockedBalance < amount) {
     throw new Error('Cannot unlock more than locked balance');
   }

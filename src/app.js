@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import config from './config/config.js';
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpecs from './config/swagger.js';
 
 // Import routes
 import userRoutes from './routes/userRoutes.js';
@@ -25,6 +27,9 @@ app.use('/api/stores', storeRoutes);
 app.use('/api/wallets', walletRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/sessions', sessionRoutes);
+
+// Swagger Documentation
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 // Health check route
 app.get('/health', (req, res) => {
@@ -55,7 +60,7 @@ app.use((req, res, next) => {
 // Global error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  
+
   res.status(err.status || 500).json({
     success: false,
     message: err.message || 'Internal Server Error',

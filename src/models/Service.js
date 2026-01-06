@@ -18,8 +18,12 @@ const serviceSchema = new mongoose.Schema(
     },
     ratePerSecond: {
       type: Number,
-      required: [true, 'Please provide rate per second'],
-      min: [0, 'Rate per second cannot be negative']
+      default: 0
+    },
+    ratePerMinute: {
+      type: Number,
+      required: true,
+      min: [0, 'Rate per minute cannot be negative']
     },
     minBalanceRequired: {
       type: Number,
@@ -46,10 +50,8 @@ const serviceSchema = new mongoose.Schema(
 serviceSchema.index({ storeId: 1 });
 serviceSchema.index({ isActive: 1 });
 
-// Virtual for rate per minute
-serviceSchema.virtual('ratePerMinute').get(function () {
-  return this.ratePerSecond * 60;
-});
+// Virtual for rate per minute (Removed as it is now a field)
+
 
 // Virtual for rate per hour
 serviceSchema.virtual('ratePerHour').get(function () {
