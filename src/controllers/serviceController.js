@@ -119,7 +119,7 @@ export const createService = async (req, res, next) => {
       storeId,
       name,
       ratePerSecond: parseFloat((ratePerSecond).toFixed(4)),
-      ratePerMinute: parseFloat((ratePerMinute).toFixed(4)),
+      ratePerMinute: parseFloat((ratePerSecond * 60).toFixed(4)),
       minBalanceRequired: parseFloat((minBalanceRequired).toFixed(4)),
       qrCodeId,
       isActive: true
