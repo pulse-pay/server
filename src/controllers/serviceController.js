@@ -94,7 +94,7 @@ export const getServiceByQrCode = async (req, res, next) => {
  */
 export const createService = async (req, res, next) => {
   try {
-    const { storeId, name, ratePerSecond, minBalanceRequired } = req.body;
+    const { storeId, name, ratePerSecond, ratePerMinute, minBalanceRequired } = req.body;
     
     // Verify store exists and is verified
     const store = await StoreAccount.findById(storeId);
@@ -118,8 +118,9 @@ export const createService = async (req, res, next) => {
     const service = await Service.create({
       storeId,
       name,
-      ratePerSecond,
-      minBalanceRequired,
+      ratePerSecond: parseFloat((ratePerSecond).toFixed(4)),
+      ratePerMinute: parseFloat((ratePerMinute).toFixed(4)),
+      minBalanceRequired: parseFloat((minBalanceRequired).toFixed(4)),
       qrCodeId,
       isActive: true
     });
