@@ -13,6 +13,13 @@ const router = express.Router();
 
 /**
  * @swagger
+ * tags:
+ *   name: Sessions
+ *   description: Manage real-time streaming sessions and billing
+ */
+
+/**
+ * @swagger
  * /sessions/start:
  *   post:
  *     summary: Start a streaming session
@@ -23,14 +30,16 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - userWalletId
- *               - serviceId
+ *             required: [serviceId]
  *             properties:
  *               userWalletId:
  *                 type: string
+ *                 description: Wallet initiating the stream
  *               serviceId:
  *                 type: string
+ *               evmAddress:
+ *                 type: string
+ *                 description: Optional EVM address to look up the wallet
  *     responses:
  *       201:
  *         description: Session started successfully
@@ -39,17 +48,100 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/StreamSession'
  *       400:
- *         description: Bad request (insufficient balance, etc.)
+ *         description: Validation failed or insufficient balance
  */
 router.post('/start', startSession);
 
-// Route: /api/sessions/active/:walletId
+/**
+ * @swagger
+ * /sessions/active/{walletId}:
+ *   get:
+ *     summary: Get the active session for a wallet
+ *     tags: [Sessions]
+ *     parameters:
+ *       - in: path
+ *         name: walletId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User wallet ID
+ *     responses:
+ *       200:
+ *         description: Active session found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/StreamSession'
+ *       404:
+ *         description: No active session
+ */
 router.get('/active/:walletId', getActiveSession);
 
-// Route: /api/sessions/history/:walletId
+/**
+ * @swagger
+ * /sessions/history/{walletId}:
+ *   get:
+ *     summary: Get session history for a wallet
+ *     tags: [Sessions]
+ *     parameters:
+ *       - in: path
+ *         name: walletId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of records to return (default 20)
+ *       - in: query
+ *         name: skip
+ *         schema:
+ *           type: integer
+ *         description: Records to skip for pagination
+ *     responses:
+ *       200:
+ *         description: Paged history of sessions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 count:
+ *                   type: integer
+ *                 total:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/StreamSession'
+ */
 router.get('/history/:walletId', getSessionHistory);
 
-// Route: /api/sessions/:id
+/**
+ * @swagger
+ * /sessions/{id}:
+ *   get:
+ *     summary: Get session by ID
+ *     tags: [Sessions]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Session details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/StreamSession'
+ *       404:
+ *         description: Session not found
+ */
 router.get('/:id', getSessionById);
 
 /**
@@ -68,10 +160,29 @@ router.get('/:id', getSessionById);
  *     responses:
  *       200:
  *         description: Session ended successfully
+ *       404:
+ *         description: Session not found
  */
 router.post('/:id/end', endSession);
 
-// Route: /api/sessions/:id/bill
+/**
+ * @swagger
+ * /sessions/{id}/bill:
+ *   post:
+ *     summary: Process billing for an active session
+ *     tags: [Sessions]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Billing processed
+ *       400:
+ *         description: No active session to bill or insufficient balance
+ */
 router.post('/:id/bill', processSessionBilling);
 
 /**
@@ -90,6 +201,8 @@ router.post('/:id/bill', processSessionBilling);
  *     responses:
  *       200:
  *         description: Session status synced
+ *       400:
+ *         description: Not a crypto session or wallet addresses missing
  */
 router.post('/:id/sync', syncSessionStatus);
 
