@@ -155,7 +155,10 @@ export const updateService = async (req, res, next) => {
     
     const updateData = {};
     if (name) updateData.name = name;
-    if (typeof ratePerSecond !== 'undefined') updateData.ratePerSecond = ratePerSecond;
+    if (typeof ratePerSecond !== 'undefined') {
+      updateData.ratePerSecond = parseFloat((ratePerSecond).toFixed(4));
+      updateData.ratePerMinute = parseFloat((ratePerSecond * 60).toFixed(4));
+    }
     if (typeof minBalanceRequired !== 'undefined') updateData.minBalanceRequired = minBalanceRequired;
     if (typeof isActive !== 'undefined') updateData.isActive = isActive;
     
