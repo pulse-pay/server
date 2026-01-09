@@ -4,7 +4,8 @@ import {
   getUserById,
   createUser,
   updateUser,
-  deleteUser
+  deleteUser,
+  loginUser
 } from '../controllers/userController.js';
 
 const router = express.Router();
@@ -143,6 +144,48 @@ router.route('/')
  *       404:
  *         description: User not found
  */
+/**
+ * @swagger
+ * /users/login:
+ *   post:
+ *     summary: Login user
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: User email address
+ *               password:
+ *                 type: string
+ *                 description: User password
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/UserAccount'
+ *       400:
+ *         description: Missing email or password
+ *       401:
+ *         description: Invalid credentials or account blocked
+ */
+router.post('/login', loginUser);
+
 router.route('/:id')
   .get(getUserById)
   .put(updateUser)

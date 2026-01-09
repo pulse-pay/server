@@ -191,6 +191,56 @@ Create a new user.
 
 ---
 
+#### `POST /api/users/login`
+
+Login a user.
+
+**Request Body:**
+
+| Field      | Type   | Required | Description         |
+|------------|--------|----------|---------------------|
+| `email`    | string | Yes      | User email address  |
+| `password` | string | Yes      | User password       |
+
+**Example Request:**
+
+```json
+{
+  "email": "john@example.com",
+  "password": "securepass123"
+}
+```
+
+**Response (200):**
+
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "id": "64a1b2c3d4e5f6789...",
+    "fullName": "John Doe",
+    "email": "john@example.com",
+    "phone": "+1234567890",
+    "walletId": "64a1b2c3d4e5f6789...",
+    "status": "ACTIVE",
+    "kycLevel": "BASIC",
+    "createdAt": "2026-01-09T10:00:00.000Z",
+    "updatedAt": "2026-01-09T10:00:00.000Z"
+  }
+}
+```
+
+**Error Responses:**
+
+| Status | Message                                    |
+|--------|--------------------------------------------|
+| `400`  | Please provide email and password          |
+| `401`  | Invalid credentials                        |
+| `401`  | Account is blocked. Please contact support.|
+
+---
+
 #### `GET /api/users/:id`
 
 Get a user by ID.

@@ -203,3 +203,59 @@ export const deleteUser = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * @desc    Login user
+ * @route   POST /api/users/login
+ * @access  Public
+ */
+export const loginUser = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+
+    // Validate email and password
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide email and password'
+      });
+    }
+
+    // Find user by email and include password
+    const user = await UserAccount.findOne({ email: email.toLowerCase() })
+      .select('+passwordHash')
+      .populate('walletId', 'balance currency status');
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+
+    // Check if account is active
+    if (!user.isAccountActive()) {
+      return res.status(401).json({
+        success: false,
+        message: 'Account is blocked. Please contact support.'
+      });
+    }
+
+    // Check password (TODO: Use bcrypt.compare in production)
+    if (user.passwordHash !== password) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+
+    // Return user data (excluding password)
+    res.status(200).json({
+      success: true,
+      message: 'Login successful',
+      data: user.getPublicProfile()
+    });
+  } catch (error) {
+    next(error);
+  }
+};
