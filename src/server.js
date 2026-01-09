@@ -17,6 +17,7 @@ connectDB();
 const server = app.listen(PORT, () => {
   console.log(`Server running in ${NODE_ENV} mode on port ${PORT}`);
   console.log(`API endpoint: http://localhost:${PORT}`);
+  console.log(`API docs: http://localhost:${PORT}/api/docs`);
 });
 
 // Handle unhandled promise rejections
