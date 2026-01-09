@@ -29,7 +29,7 @@ export const getAllStores = async (req, res, next) => {
 };
 
 /**
- * @desc    Get single store account by ID
+ * @desc    Get single store account
  * @route   GET /api/stores/:id
  * @access  Public
  */
@@ -38,14 +38,14 @@ export const getStoreById = async (req, res, next) => {
     const store = await StoreAccount.findById(req.params.id)
       .select('-passwordHash')
       .populate('walletId', 'balance currency status');
-    
+
     if (!store) {
       return res.status(404).json({
         success: false,
         message: 'Store account not found'
       });
     }
-    
+
     res.status(200).json({
       success: true,
       data: store
@@ -57,6 +57,51 @@ export const getStoreById = async (req, res, next) => {
         message: 'Store account not found'
       });
     }
+    next(error);
+  }
+};
+
+/**
+ * @desc    POST store login
+ * @route   POST /api/stores/login
+ * @access  Public
+ */
+export const loginStore = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+
+    // Validate email & password
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide an email and password'
+      });
+    }
+
+    // Check for store (include passwordHash for credential check)
+    const store = await StoreAccount.findOne({ email }).select('+passwordHash');
+
+    if (!store) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+
+    // Check if password matches using model method
+    if (!store.checkCredentials(password)) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Login successful',
+      data: store.getPublicProfile()
+    });
+  } catch (error) {
     next(error);
   }
 };
@@ -244,4 +289,3 @@ export const deleteStore = async (req, res, next) => {
     next(error);
   }
 };
-

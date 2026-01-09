@@ -5,7 +5,8 @@ import {
   createStore,
   updateStore,
   verifyStore,
-  deleteStore
+  deleteStore,
+  loginStore
 } from '../controllers/storeController.js';
 import { getServicesByStore } from '../controllers/serviceController.js';
 
@@ -100,9 +101,41 @@ router.route('/')
 
 /**
  * @swagger
+ * /stores/login:
+ *   post:
+ *     summary: Store login
+ *     tags: [Stores]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *                 format: password
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/StoreAccount'
+ */
+router.route('/login')
+  .post(loginStore);
+
+
+/**
+ * @swagger
  * /stores/{id}:
  *   get:
- *     summary: Get store by ID
+ *     summary: Get a store by ID
  *     tags: [Stores]
  *     parameters:
  *       - in: path
@@ -112,7 +145,7 @@ router.route('/')
  *           type: string
  *     responses:
  *       200:
- *         description: Store fetched
+ *         description: Store found
  *         content:
  *           application/json:
  *             schema:

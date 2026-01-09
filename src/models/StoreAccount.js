@@ -134,6 +134,11 @@ storeAccountSchema.methods.canAcceptPayments = function () {
   return this.isActive && this.verificationStatus === 'VERIFIED' && this.walletId;
 };
 
+// Instance method - check credentials (TODO: Use bcrypt.compare in production)
+storeAccountSchema.methods.checkCredentials = function (password) {
+  return this.passwordHash === password;
+};
+
 const StoreAccount = mongoose.model('StoreAccount', storeAccountSchema);
 
 export default StoreAccount;
