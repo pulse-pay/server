@@ -1037,11 +1037,13 @@ Start a new streaming session.
 
 **Request Body:**
 
-| Field          | Type   | Required | Description                               |
-|----------------|--------|----------|-------------------------------------------|
-| `serviceId`    | string | Yes      | Service ID to stream                      |
-| `userWalletId` | string | No*      | User wallet ID                            |
-| `evmAddress`   | string | No*      | EVM address to look up wallet             |
+| Field          | Type   | Required | Description                                              |
+|----------------|--------|----------|----------------------------------------------------------|
+| `serviceId`    | string | Yes      | Service ID to stream                                     |
+| `userWalletId` | string | No*      | User wallet ID                                           |
+| `userId`       | string | No       | User ID (pass to avoid extra DB lookup)                  |
+| `storeId`      | string | No       | Store ID to add to user's storeIds array                 |
+| `evmAddress`   | string | No*      | EVM address to look up wallet                            |
 
 > \* Either `userWalletId` or `evmAddress` must be provided.
 
@@ -1049,8 +1051,10 @@ Start a new streaming session.
 
 ```json
 {
+  "userId": "64a1b2c3d4e5f6789...",
+  "userWalletId": "64a1b2c3d4e5f6789...",
   "serviceId": "64a1b2c3d4e5f6789...",
-  "userWalletId": "64a1b2c3d4e5f6789..."
+  "storeId": "64a1b2c3d4e5f6789..."
 }
 ```
 
@@ -1059,6 +1063,7 @@ Start a new streaming session.
 ```json
 {
   "success": true,
+  "message": "Session started successfully",
   "data": {
     "_id": "64a1b2c3d4e5f6789...",
     "userWalletId": "64a1b2c3d4e5f6789...",
@@ -1078,8 +1083,24 @@ Start a new streaming session.
 
 **Error Responses:**
 
-- `400`: Validation failed, insufficient balance, or wallet already has active session
-- `404`: Service or wallet not found
+| Status | Message                                      |
+|--------|----------------------------------------------|
+| `400`  | Validation failed                            |
+| `400`  | Insufficient balance                         |
+| `400`  | User already has an active session           |
+| `400`  | User wallet is suspended                     |
+| `400`  | Service is not active                        |
+| `400`  | Store wallet is not available                |
+| `404`  | User wallet not found                        |
+| `404`  | Service not found                            |
+| `404`  | No wallet found for this address             |
+
+**Side Effects:**
+
+- Creates a new streaming session
+- Sets `activeSessionId` on user's wallet
+- Adds `storeId` to user's `storeIds` array (if provided)
+- Creates Superfluid flow if crypto-enabled
 
 ---
 

@@ -1,83 +1,112 @@
-# PulsePay API
+# PulsePay
 
-Real-time payment streaming API for services like Gym, EV Charging, WiFi, and Parking.
+Real-time streaming payment platform for per-second billing of services like gyms, EV charging, WiFi, and parking.
 
-## Setup
+## Features
+
+- **Real-time Streaming Payments**: Per-second billing with Superfluid integration
+- **Multi-tenant**: Support for multiple store types (GYM, EV, WIFI, PARKING)
+- **Wallet System**: User and store wallets with balance tracking
+- **Session Management**: Start, bill, and end streaming sessions
+- **QR Code Services**: Scan-to-start service sessions
+- **User-Store Tracking**: Track which stores users have visited via `storeIds`
+
+## Tech Stack
+
+- **Backend**: Node.js, Express.js
+- **Database**: MongoDB with Mongoose
+- **Blockchain**: Superfluid Protocol (optional crypto streaming)
+- **Documentation**: Swagger/OpenAPI
+
+## Quick Start
 
 ```bash
+# Install dependencies
 npm install
+
+# Set up environment
+cp ENV_TEMPLATE.txt .env
+# Edit .env with your configuration
+
+# Start MongoDB
+mongod
+
+# Start the server
 npm run dev
 ```
 
-## API Routes
+## API Endpoints
 
-### Users `/api/users`
+| Method | Endpoint                      | Description                    |
+|--------|-------------------------------|--------------------------------|
+| POST   | `/api/users`                  | Create user                    |
+| POST   | `/api/users/login`            | User login                     |
+| GET    | `/api/users/:id`              | Get user profile               |
+| POST   | `/api/stores`                 | Create store                   |
+| POST   | `/api/stores/login`           | Store login                    |
+| GET    | `/api/stores/:id/clients`     | Get store clients (users)      |
+| POST   | `/api/sessions/start`         | Start streaming session        |
+| POST   | `/api/sessions/:id/end`       | End streaming session          |
+| POST   | `/api/sessions/:id/bill`      | Process session billing        |
+| GET    | `/api/wallets/:id/balance`    | Get wallet balance             |
+| POST   | `/api/wallets/:id/topup`      | Top up wallet                  |
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/users` | Get all users |
-| GET | `/api/users/:id` | Get user by ID |
-| POST | `/api/users` | Create user |
-| PUT | `/api/users/:id` | Update user |
-| DELETE | `/api/users/:id` | Delete user |
+## Data Models
 
-### Stores `/api/stores`
+### UserAccount
+- `fullName`, `email`, `phone`, `passwordHash`
+- `walletId` - Reference to user's wallet
+- `storeIds[]` - Array of stores the user has used
+- `status` - ACTIVE | BLOCKED
+- `kycLevel` - BASIC | VERIFIED
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/stores` | Get all stores |
-| GET | `/api/stores/:id` | Get store by ID |
-| POST | `/api/stores` | Create store |
-| PUT | `/api/stores/:id` | Update store |
-| PUT | `/api/stores/:id/verify` | Verify store |
-| GET | `/api/stores/:storeId/services` | Get store services |
-| DELETE | `/api/stores/:id` | Delete store |
+### StoreAccount
+- `storeName`, `ownerName`, `email`, `phone`
+- `walletId` - Reference to store's wallet
+- `storeType` - GYM | EV | WIFI | PARKING
+- `location` - { address, lat, lng }
+- `verificationStatus` - PENDING | VERIFIED | REJECTED
 
-### Wallets `/api/wallets`
+### StreamSession
+- `userWalletId`, `storeWalletId`, `serviceId`
+- `ratePerSecond`, `startedAt`, `lastBilledAt`
+- `status` - ACTIVE | PAUSED | ENDED
+- `totalAmountTransferred`, `totalDurationSeconds`
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/wallets/:id` | Get wallet |
-| GET | `/api/wallets/:id/balance` | Get balance |
-| POST | `/api/wallets/:id/topup` | Top up wallet |
-| POST | `/api/wallets/:id/withdraw` | Withdraw from wallet |
-| GET | `/api/wallets/:id/transactions` | Get transactions |
-| PUT | `/api/wallets/:id/suspend` | Suspend wallet |
-| PUT | `/api/wallets/:id/activate` | Activate wallet |
+## Starting a Session
 
-### Services `/api/services`
+```bash
+curl -X POST http://localhost:5000/api/sessions/start \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "user_id_here",
+    "userWalletId": "wallet_id_here",
+    "serviceId": "service_id_here",
+    "storeId": "store_id_here"
+  }'
+```
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/services` | Get all services |
-| GET | `/api/services/:id` | Get service by ID |
-| GET | `/api/services/qr/:qrCodeId` | Get service by QR code |
-| POST | `/api/services` | Create service |
-| PUT | `/api/services/:id` | Update service |
-| DELETE | `/api/services/:id` | Delete service |
+This will:
+1. Validate user wallet and balance
+2. Create a streaming session
+3. Add the store to user's `storeIds` array
+4. Start Superfluid flow (if crypto-enabled)
 
-### Sessions `/api/sessions`
+## Documentation
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/sessions/start` | Start streaming session |
-| POST | `/api/sessions/:id/end` | End session |
-| POST | `/api/sessions/:id/bill` | Process billing |
-| GET | `/api/sessions/:id` | Get session by ID |
-| GET | `/api/sessions/active/:walletId` | Get active session |
-| GET | `/api/sessions/history/:walletId` | Get session history |
-
-### Health Check
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/health` | Server health check |
-| GET | `/` | API info |
+- **API Docs**: `http://localhost:5000/api/docs`
+- **Health Check**: `http://localhost:5000/health`
 
 ## Environment Variables
 
-```env
-PORT=5000
-NODE_ENV=development
-MONGO_URI=mongodb://localhost:27017/pulsepay
-```
+| Variable           | Description                     | Default                              |
+|--------------------|---------------------------------|--------------------------------------|
+| `PORT`             | Server port                     | `5000`                               |
+| `NODE_ENV`         | Environment mode                | `development`                        |
+| `MONGO_URI`        | MongoDB connection string       | `mongodb://localhost:27017/pulsepay` |
+| `CORS_ORIGIN`      | Allowed CORS origins            | `*`                                  |
+| `TEST_PRIVATE_KEY` | Test private key for blockchain | -                                    |
+
+## License
+
+MIT License
