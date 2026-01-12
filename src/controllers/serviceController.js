@@ -94,7 +94,7 @@ export const getServiceByQrCode = async (req, res, next) => {
  */
 export const createService = async (req, res, next) => {
   try {
-    const { storeId, name, ratePerSecond, ratePerMinute, minBalanceRequired } = req.body;
+    const { storeId, name, ratePerSecond, minBalanceRequired } = req.body;
     
     // Verify store exists and is verified
     const store = await StoreAccount.findById(storeId);
@@ -118,9 +118,9 @@ export const createService = async (req, res, next) => {
     const service = await Service.create({
       storeId,
       name,
-      ratePerSecond: parseFloat((ratePerSecond).toFixed(4)),
-      ratePerMinute: parseFloat((ratePerSecond * 60).toFixed(4)),
-      minBalanceRequired: parseFloat((minBalanceRequired).toFixed(4)),
+      ratePerSecond,
+      ratePerMinute: ratePerSecond * 60,
+      minBalanceRequired,
       qrCodeId,
       isActive: true
     });
@@ -156,8 +156,8 @@ export const updateService = async (req, res, next) => {
     const updateData = {};
     if (name) updateData.name = name;
     if (typeof ratePerSecond !== 'undefined') {
-      updateData.ratePerSecond = parseFloat((ratePerSecond).toFixed(4));
-      updateData.ratePerMinute = parseFloat((ratePerSecond * 60).toFixed(4));
+      updateData.ratePerSecond = ratePerSecond;
+      updateData.ratePerMinute = ratePerSecond * 60;
     }
     if (typeof minBalanceRequired !== 'undefined') updateData.minBalanceRequired = minBalanceRequired;
     if (typeof isActive !== 'undefined') updateData.isActive = isActive;
@@ -241,4 +241,3 @@ export const getServicesByStore = async (req, res, next) => {
     next(error);
   }
 };
-
