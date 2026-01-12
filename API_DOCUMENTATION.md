@@ -550,6 +550,42 @@ Delete a store.
 
 ---
 
+#### `GET /api/stores/:id/clients`
+
+Get all clients (users who have used services) for a specific store.
+
+**Parameters:**
+
+| Parameter | Type   | Description |
+|-----------|--------|-------------|
+| `id`      | string | Store ID    |
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "count": 2,
+  "data": [
+    {
+      "_id": "64a1b2c3d4e5f6789...",
+      "fullName": "John Doe",
+      "email": "john@example.com",
+      "phone": "+1234567890",
+      "status": "ACTIVE"
+    }
+  ]
+}
+```
+
+**Error Responses:**
+
+| Status | Message         |
+|--------|-----------------|
+| `404`  | Store not found |
+
+---
+
 #### `PUT /api/stores/:id/verify`
 
 Verify or reject a store.
@@ -1230,17 +1266,18 @@ Sync session status with blockchain (for crypto-enabled sessions using Superflui
 
 ### User
 
-| Field          | Type     | Description                           |
-|----------------|----------|---------------------------------------|
-| `_id`          | ObjectId | Unique identifier                     |
-| `fullName`     | string   | User's full name                      |
-| `email`        | string   | Email address (unique)                |
-| `phone`        | string   | Phone number (unique)                 |
-| `walletId`     | ObjectId | Reference to user's wallet            |
-| `status`       | string   | `ACTIVE` or `BLOCKED`                 |
-| `kycLevel`     | string   | `BASIC` or `VERIFIED`                 |
-| `createdAt`    | Date     | Creation timestamp                    |
-| `updatedAt`    | Date     | Last update timestamp                 |
+| Field          | Type       | Description                           |
+|----------------|------------|---------------------------------------|
+| `_id`          | ObjectId   | Unique identifier                     |
+| `fullName`     | string     | User's full name                      |
+| `email`        | string     | Email address (unique)                |
+| `phone`        | string     | Phone number (unique)                 |
+| `walletId`     | ObjectId   | Reference to user's wallet            |
+| `storeIds`     | ObjectId[] | Array of store IDs owned by user      |
+| `status`       | string     | `ACTIVE` or `BLOCKED`                 |
+| `kycLevel`     | string     | `BASIC` or `VERIFIED`                 |
+| `createdAt`    | Date       | Creation timestamp                    |
+| `updatedAt`    | Date       | Last update timestamp                 |
 
 ### Store
 

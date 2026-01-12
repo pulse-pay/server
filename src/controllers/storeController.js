@@ -1,5 +1,6 @@
 import StoreAccount from '../models/StoreAccount.js';
 import Wallet from '../models/Wallet.js';
+import User from '../models/User.js';
 
 /**
  * @desc    Get all store accounts
@@ -278,6 +279,38 @@ export const deleteStore = async (req, res, next) => {
       success: true,
       message: 'Store account deleted successfully',
       data: {}
+    });
+  } catch (error) {
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({
+        success: false,
+        message: 'Store account not found'
+      });
+    }
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get all clients by store ID
+ * @route   GET /api/stores/:id/clients
+ * @access  Public
+ */
+export const getAllClientsByStoreId = async (req, res, next) => {
+  try {
+    const users = await User.findByStoreId(req.params.id);
+    
+    if (!users) {
+      return res.status(404).json({
+        success: false,
+        message: 'Store account not found'
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      count: users.length,
+      data: users
     });
   } catch (error) {
     if (error.kind === 'ObjectId') {

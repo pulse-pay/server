@@ -32,23 +32,44 @@ const router = express.Router();
  *             type: object
  *             required: [serviceId]
  *             properties:
+ *               userId:
+ *                 type: string
+ *                 description: User ID (optional - pass to avoid extra DB lookup, falls back to wallet.ownerId)
  *               userWalletId:
  *                 type: string
  *                 description: Wallet initiating the stream
  *               serviceId:
  *                 type: string
+ *                 description: Service ID to stream
+ *               storeId:
+ *                 type: string
+ *                 description: Store ID to add to user's storeIds array
  *               evmAddress:
  *                 type: string
- *                 description: Optional EVM address to look up the wallet
+ *                 description: Optional EVM address to look up the wallet (if userWalletId not provided)
+ *           example:
+ *             userId: "64a1b2c3d4e5f6789..."
+ *             userWalletId: "64a1b2c3d4e5f6789..."
+ *             serviceId: "64a1b2c3d4e5f6789..."
+ *             storeId: "64a1b2c3d4e5f6789..."
  *     responses:
  *       201:
  *         description: Session started successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/StreamSession'
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/StreamSession'
  *       400:
- *         description: Validation failed or insufficient balance
+ *         description: Validation failed, insufficient balance, or user already has active session
+ *       404:
+ *         description: Wallet or service not found
  */
 router.post('/start', startSession);
 
@@ -93,11 +114,13 @@ router.get('/active/:walletId', getActiveSession);
  *         name: limit
  *         schema:
  *           type: integer
- *         description: Number of records to return (default 20)
+ *           default: 20
+ *         description: Number of records to return
  *       - in: query
  *         name: skip
  *         schema:
  *           type: integer
+ *           default: 0
  *         description: Records to skip for pagination
  *     responses:
  *       200:
@@ -160,8 +183,31 @@ router.get('/:id', getSessionById);
  *     responses:
  *       200:
  *         description: Session ended successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     sessionId:
+ *                       type: string
+ *                     totalDurationSeconds:
+ *                       type: number
+ *                     totalAmountTransferred:
+ *                       type: number
+ *                     endedAt:
+ *                       type: string
+ *                       format: date-time
  *       404:
  *         description: Session not found
+ *       400:
+ *         description: Session is already ended
  */
 router.post('/:id/end', endSession);
 
@@ -180,6 +226,28 @@ router.post('/:id/end', endSession);
  *     responses:
  *       200:
  *         description: Billing processed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: booleanactive
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     billedAmount:
+ *                       type: number
+ *                     billedSeconds:
+ *                       type: number
+ *                     totalAmountTransferred:
+ *                       type: number
+ *                     totalDurationSeconds:
+ *                       type: number
+ *                     userBalance:
+ *                       type: number
  *       400:
  *         description: No active session to bill or insufficient balance
  */

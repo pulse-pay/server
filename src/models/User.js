@@ -43,6 +43,11 @@ const userAccountSchema = new mongoose.Schema(
       ref: 'Wallet',
       default: null
     },
+    storeIds: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: 'StoreAccount',
+      default: []
+    },
     status: {
       type: String,
       enum: {
@@ -67,6 +72,7 @@ const userAccountSchema = new mongoose.Schema(
 
 // Indexes
 userAccountSchema.index({ walletId: 1 });
+userAccountSchema.index({ storeIds: 1 });
 
 // Instance method - get public profile
 userAccountSchema.methods.getPublicProfile = function () {
@@ -91,6 +97,11 @@ userAccountSchema.statics.findByEmail = function (email) {
 // Static method - find by phone
 userAccountSchema.statics.findByPhone = function (phone) {
   return this.findOne({ phone });
+};
+
+// Static method - find all users by store ID
+userAccountSchema.statics.findByStoreId = function (storeId) {
+  return this.find({ storeIds: storeId });
 };
 
 // Instance method - check if account is active

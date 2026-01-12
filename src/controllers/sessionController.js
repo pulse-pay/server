@@ -2,6 +2,7 @@ import StreamSession from '../models/StreamSession.js';
 import Service from '../models/Service.js';
 import Wallet from '../models/Wallet.js';
 import WalletLedger from '../models/WalletLedger.js';
+import UserAccount from '../models/User.js';
 import { createFlow, stopFlow, getFlowInfo, DEFAULT_SUPER_TOKEN } from '../services/superfluid.js';
 import { ethers } from 'ethers';
 
@@ -12,7 +13,7 @@ import { ethers } from 'ethers';
  */
 export const startSession = async (req, res, next) => {
   try {
-    const { userWalletId, serviceId, evmAddress } = req.body;
+    const { userWalletId, serviceId, storeId, evmAddress, userId } = req.body;
 
     let targetWalletId = userWalletId;
 
@@ -103,12 +104,8 @@ export const startSession = async (req, res, next) => {
     // Try to create Superfluid Flow (if wallet is crypto-enabled)
     if (userWallet.encryptedPrivateKey && storeWallet.evmAddress) {
       try {
-        // Use ratePerMinute to get wei/second
-        // Rate = (RatePerMin / 60) scaled to 18 decimals
-        // Formula: (RatePerMin * 10^18) / 60
-
         const ratePerMinWei = ethers.utils.parseEther(service.ratePerMinute.toString());
-        const flowRateWei = ratePerMinWei.div(60); // ethers v5 BigNumber division
+        const flowRateWei = ratePerMinWei.div(60);
 
         console.log(`Starting Superfluid flow: ${flowRateWei.toString()} wei/sec (${service.ratePerMinute} tokens/min)`);
 
@@ -122,8 +119,6 @@ export const startSession = async (req, res, next) => {
         session.superTokenAddress = DEFAULT_SUPER_TOKEN;
       } catch (sfError) {
         console.error('Superfluid creation failed:', sfError);
-        // Delete session if on-chain fails? Or allow fallback?
-        // For this strict requirement, we should probably fail.
         await StreamSession.deleteOne({ _id: session._id });
         return res.status(500).json({
           success: false,
@@ -137,6 +132,19 @@ export const startSession = async (req, res, next) => {
     // Update user wallet with active session
     userWallet.activeSessionId = session._id;
     await userWallet.save();
+
+    // Add storeId to user's storeIds array
+    // Use userId from request body (avoids extra DB lookup)
+    // Fallback to wallet.ownerId if userId not provided
+    if (storeId) {
+      const targetUserId = userId || userWallet.ownerId;
+      if (targetUserId && userWallet.ownerType === 'USER') {
+        await UserAccount.updateOne(
+          { _id: targetUserId },
+          { $addToSet: { storeIds: storeId } }
+        );
+      }
+    }
 
     await session.populate([
       { path: 'serviceId', select: 'name ratePerSecond' },

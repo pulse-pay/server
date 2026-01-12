@@ -6,7 +6,8 @@ import {
   updateStore,
   verifyStore,
   deleteStore,
-  loginStore
+  loginStore,
+  getAllClientsByStoreId
 } from '../controllers/storeController.js';
 import { getServicesByStore } from '../controllers/serviceController.js';
 
@@ -191,6 +192,37 @@ router.route('/:id')
   .get(getStoreById)
   .put(updateStore)
   .delete(deleteStore);
+
+/**
+ * @swagger
+ * /stores/{id}/clients:
+ *   get:
+ *     summary: Get all clients by store ID
+ *     tags: [Stores]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Clients found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 count:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *       404:
+ *         description: Store not found
+ */
+router.get('/:id/clients', getAllClientsByStoreId);
 
 /**
  * @swagger
