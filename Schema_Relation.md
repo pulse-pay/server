@@ -7,11 +7,12 @@
 │ phone           │         │ email, phone    │
 │ passwordHash    │         │ passwordHash    │
 │ walletId ───────┼────┐    │ walletId ───────┼───┐
-│ status          │    │    │ storeType       │   │
-│ kycLevel        │    │    │ location        │   │
-└─────────────────┘    │    │ verificationStatus  │
-                       │    │ isActive        │   │
-                       ▼    └─────────────────┘   │
+│ storeIds[] ─────┼────┼───►│ storeType       │   │
+│ status          │    │    │ location        │   │
+│ kycLevel        │    │    │ verificationStatus  │
+└─────────────────┘    │    │ isActive        │   │
+                       │    └─────────────────┘   │
+                       ▼                          │
               ┌─────────────────┐                 │
               │     Wallet      │◄────────────────┘
               │─────────────────│
